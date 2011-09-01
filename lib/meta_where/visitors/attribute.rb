@@ -38,7 +38,13 @@ module MetaWhere
       end
 
       def visit_MetaWhere_Column(o, parent)
-        table = tables[parent]
+        column_name = o.column.to_s
+        if column_name.include?('.')
+          table_name, column_name = column_name.split('.', 2)
+          table = Arel::Table.new(table_name, :engine => parent.arel_engine)
+        else
+          table = tables[parent]
+        end
 
         unless attribute = attribute_from_column_and_table(o.column, table)
           raise ::ActiveRecord::StatementInvalid, "No attribute named `#{o.column}` exists for table `#{table.name}`"
